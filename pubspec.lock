@@ -27,18 +27,6 @@ packages:
     description: path
     source: hosted
     version: "1.2.1"
-  spark_utils:
-    description:
-      path: "../spark_utils"
-      relative: true
-    source: path
-    version: "0.0.1"
-  sparkflow:
-    description:
-      path: "../sparkflow"
-      relative: true
-    source: path
-    version: "0.5.7"
   streamable:
     description: streamable
     source: hosted

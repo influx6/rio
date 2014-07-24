@@ -1,21 +1,15 @@
-name: spark_fs
+name: rio
 version: 0.0.1
 author: Alexander Ewetumo <trinoxf@gmail.com>
 description: fs components for sparkflow
 dependencies:
-  sparkflow: any
   hub: any
   bass: any
-  spark_utils: any
   guardedfs: any
 dependency_overrides:
   guardedfs:
      path: ../guardedfs
-  sparkflow:
-     path: ../sparkflow
   hub:
      path: ../hub
   bass:
      path: ../bass
-  spark_utils:
-     path: ../spark_utils
