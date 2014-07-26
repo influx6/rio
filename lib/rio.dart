@@ -127,6 +127,14 @@ class Rio{
 
   }
 
+  void enableDefaults(){
+     this.onDefault('head',(r) => this.end());
+     this.onDefault('get',(r) => this.end());
+     this.onDefault('put',(r) => this.end());
+     this.onDefault('delete',(r) => this.end());
+     this.onDefault('post',(r) => this.end());
+  }
+
   void on(String m,Function n) => this.methods.has(m) && this.methods.get(m).once(n);
   void once(String m,Function n) => this.methods.has(m) && this.methods.get(m).once(n);
 
