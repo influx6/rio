@@ -54,16 +54,8 @@ class RioText extends RioView{
 class RioHtml extends RioView{
   static create() => new RioHtml();
   Future render(w,r,[m]){
-     var d = w.replaceAll(r'\n','\\n').
-      replaceAll(r'\r','\\r').
-      replaceAll(r"'","\\").
-      replaceAll(r"/&","&amp").
-      replaceAll(r'<','&lt;').
-      replaceAll(r'>','&gt;').
-      replaceAll(r'>','&gt;').
-      replaceAll(r'\"','%quot;');
-      r.write(d);
-    return new Future.value(d);
+    r.write(w);
+    return new Future.value(w);
   }
 }
 
@@ -95,7 +87,10 @@ class Rio{
   HttpRequest _req;
   MapDecorator _builds;
   MapDecorator headers;
+  MapDecorator methods,defMethods;
   Distributor _readydist;
+
+  static List requestMethods = ['head','get','post','put','delete'];
 
   static MapDecorator ViewRenderers = MapDecorator.useMap({
     'html': RioHtml.create(),
@@ -110,12 +105,47 @@ class Rio{
   Rio(){
     this._builds = MapDecorator.create();
     this.headers = MapDecorator.create();
+    this.methods = MapDecorator.create();
+    this.defMethods = MapDecorator.create();
     this._readydist = Distributor.create('readylist');
     this._readydist.on((n){});
     this._readydist.whenDone((n){
         this.res.close();
     });
+
+    this.methods.add('get',Distributor.create('get'));
+    this.methods.add('post',Distributor.create('post'));
+    this.methods.add('put',Distributor.create('put'));
+    this.methods.add('delete',Distributor.create('delete'));
+    this.methods.add('head',Distributor.create('head'));
+
+    this.defMethods.add('get',Distributor.create('get'));
+    this.defMethods.add('post',Distributor.create('post'));
+    this.defMethods.add('put',Distributor.create('put'));
+    this.defMethods.add('delete',Distributor.create('delete'));
+    this.defMethods.add('head',Distributor.create('head'));
+
   }
+
+  void on(String m,Function n) => this.methods.has(m) && this.methods.get(m).once(n);
+  void once(String m,Function n) => this.methods.has(m) && this.methods.get(m).once(n);
+
+  void onDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).once(n);
+  void onceDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).once(n);
+
+  void manage(){
+    Enums.eachAsync(Rio.requestMethods,(e,i,o,fn){
+        if(Valids.match(this.method,e.toLowerCase())){
+          if(!this.methods.get(e.toLowerCase()).hasListeners) return fn(e);
+          return this.methods.get(e.toLowerCase()).emit(this);
+        }
+        return fn(null);
+    },(_,err){
+      if(Valids.exist(err)) this.defMethods.get(err).emit(this);
+    });
+  }
+
+  dynamic get method => this.req.method.toLowerCase();
 
   void use(HttpRequest r){
     this.reset();
@@ -123,6 +153,7 @@ class Rio{
     this._req.headers.forEach((k,v){
        this.set(k,v);
     });
+    this.manage();
   }
 
   void reset(){

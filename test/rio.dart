@@ -11,9 +11,13 @@ void main(){
    HttpServer.bind('127.0.0.1',3000).then((s){
        var req = Rio.create();
       
-       s.listen((r){
-          req.use(r);
+       req.onDefault('head',(r) => req.end());
+       req.onDefault('get',(r) => req.end());
+       req.onDefault('put',(r) => req.end());
+       req.onDefault('delete',(r) => req.end());
+       req.onDefault('post',(r) => req.end());
 
+       req.on('get',(r){
           req.mod('Content-Type','text/html');
           req.sendHtml("""<html encoding='utf8'>
             <head>
@@ -25,6 +29,10 @@ void main(){
           </html>""");
 
           req.end();
+       });
+
+       s.listen((r){
+          req.use(r);
        });
    });
    
