@@ -135,21 +135,21 @@ class Rio{
      this.onDefault('post',(r) => this.end());
   }
 
-  void on(String m,Function n) => this.methods.has(m) && this.methods.get(m).once(n);
+  void on(String m,Function n) => this.methods.has(m) && this.methods.get(m).on(n);
   void once(String m,Function n) => this.methods.has(m) && this.methods.get(m).once(n);
 
-  void onDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).once(n);
+  void onDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).on(n);
   void onceDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).once(n);
 
   void manage(){
     Enums.eachAsync(Rio.requestMethods,(e,i,o,fn){
         if(Valids.match(this.method,e.toLowerCase())){
-          if(!this.methods.get(e.toLowerCase()).hasListeners) return fn(e);
+          if(!this.methods.get(e.toLowerCase()).hasListeners) return fn(e.toLowerCase());
           return this.methods.get(e.toLowerCase()).emit(this);
         }
         return fn(null);
     },(_,err){
-      if(Valids.exist(err)) this.defMethods.get(err).emit(this);
+      if(Valids.exist(err)) return this.defMethods.get(err).emit(this);
     });
   }
 
