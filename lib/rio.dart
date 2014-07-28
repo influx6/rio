@@ -89,6 +89,7 @@ class Rio{
   MapDecorator headers;
   MapDecorator methods,defMethods;
   Distributor _readydist;
+  Function _defaultHandle;
 
   static List requestMethods = ['head','get','post','put','delete'];
 
@@ -107,11 +108,14 @@ class Rio{
     this.headers = MapDecorator.create();
     this.methods = MapDecorator.create();
     this.defMethods = MapDecorator.create();
+
     this._readydist = Distributor.create('readylist');
     this._readydist.on((n){});
     this._readydist.whenDone((n){
         this.res.close();
     });
+
+    this._defaultHandle = (r) => r.end();
 
     this.methods.add('get',Distributor.create('get'));
     this.methods.add('post',Distributor.create('post'));
@@ -128,11 +132,19 @@ class Rio{
   }
 
   void enableDefaults(){
-     this.onDefault('head',(r) => this.end());
-     this.onDefault('get',(r) => this.end());
-     this.onDefault('put',(r) => this.end());
-     this.onDefault('delete',(r) => this.end());
-     this.onDefault('post',(r) => this.end());
+     this.onDefault('head',this._defaultHandle);
+     this.onDefault('get',this._defaultHandle);
+     this.onDefault('put',this._defaultHandle);
+     this.onDefault('delete',this._defaultHandle);
+     this.onDefault('post',this._defaultHandle);
+  }
+
+  Future getBody(){
+    var list = [], mc = new Completer();
+    this.req.listen((f){
+        list.addAll(Valids.isList(f) ? f : [f]);
+    },onDone:() => mc.complete(list),onError: (e) => mc.completeError(e));
+    return mc.future;
   }
 
   void on(String m,Function n) => this.methods.has(m) && this.methods.get(m).on(n);
@@ -154,6 +166,7 @@ class Rio{
   }
 
   dynamic get method => this.req.method.toLowerCase();
+  dynamic get url => this.req.uri.path;
 
   void use(HttpRequest r){
     this.reset();
@@ -161,6 +174,7 @@ class Rio{
     this._req.headers.forEach((k,v){
        this.set(k,v);
     });
+    this.mod('Content-Length',-1);
     this.manage();
   }
 

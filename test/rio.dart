@@ -26,6 +26,16 @@ void main(){
           req.end();
        });
 
+       req.on('post',(r){
+          req.getBody().then(Funcs.tag('body')).then((f){
+            print('about to send out res');
+            req.mod('Status-Code',200);
+            req.mod('Content-Length',-1);
+            req.send('ok!');
+            req.end();
+          });
+       });
+
        s.listen((r){
           req.use(r);
        });
