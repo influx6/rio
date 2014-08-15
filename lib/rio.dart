@@ -84,6 +84,7 @@ class RioBassHtml extends RioView{
 }
 
 class Rio{
+  Switch _ended;
   HttpRequest _req;
   MapDecorator _builds;
   MapDecorator headers;
@@ -104,6 +105,7 @@ class Rio{
 
   static create() => new Rio();
   Rio(){
+    this._ended = Switch.create();
     this._builds = MapDecorator.create();
     this.headers = MapDecorator.create();
     this.methods = MapDecorator.create();
@@ -129,6 +131,7 @@ class Rio{
     this.defMethods.add('delete',Distributor.create('delete'));
     this.defMethods.add('head',Distributor.create('head'));
 
+    this._ended.switchOff();
   }
 
   void enableDefaults(){
@@ -152,6 +155,23 @@ class Rio{
 
   void onDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).on(n);
   void onceDefault(String m,Function n) => this.defMethods.has(m) && this.defMethods.get(m).once(n);
+
+  void clearDefaultFactories(){
+    this.defMethods.onAll((v,k){
+        k.freeListeners();
+    });
+  }
+
+  void clearMethodFactories(){
+    this.methods.onAll((v,k){
+        k.freeListeners();
+    });
+  }
+
+  void clearFactories(){
+    this.clearDefaultFactories();
+    this.clearMethodFactories();
+  }
 
   void manage(){
     Enums.eachAsync(Rio.requestMethods,(e,i,o,fn){
@@ -182,8 +202,10 @@ class Rio{
     this._req = null;
     this._builds.clear();
     this.headers.clear();
+    this._ended.switchOff();
   }
 
+  bool get requestSent => this._ended.on();
   dynamic get req => this._req;
   dynamic get res => this._req.response;
 
@@ -278,9 +300,15 @@ class Rio{
   Future useHttpFile(Uri n) => this.send(n,'dfile');
 
   dynamic end(){
+    if(this._ended.on()) return null;
+    this._ended.switchOn();
     this.build((n){
       Enums.eachAsync(n,(e,i,o,fn){
-        this.res.headers.set(i,e);
+        try{
+          this.res.headers.set(i,e);
+        }catch(e){
+          return fn(true);
+        }
         return fn(null);
       },(_,err){
         this._readydist.emit(true);

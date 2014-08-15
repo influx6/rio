@@ -1,15 +1,9 @@
 name: rio
-version: 0.0.1
+version: 0.0.2
 author: Alexander Ewetumo <trinoxf@gmail.com>
-description: fs components for sparkflow
+description: provides a nice wrapper over HttpRequest class
+homepage: http://github.com/influx6/rio
 dependencies:
   hub: any
   bass: any
   guardedfs: any
-dependency_overrides:
-  guardedfs:
-     path: ../guardedfs
-  hub:
-     path: ../hub
-  bass:
-     path: ../bass
