@@ -1,9 +1,9 @@
 name: rio
-version: 0.0.2
+version: 0.0.5
 author: Alexander Ewetumo <trinoxf@gmail.com>
 description: provides a nice wrapper over HttpRequest class
 homepage: http://github.com/influx6/rio
 dependencies:
-  hub: any
   bass: any
   guardedfs: any
+  hub: any

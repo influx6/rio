@@ -13,13 +13,24 @@ abstract class RioView{
 class RioFile extends RioView{
   static create() => new RioFile();
   Future render(d,r,[m]){
-     var ff = d is Uri ? new File.fromUri(d) : new File(d);
-     return ff.exist().then((c){
-        ff.openRead()
-         .transform(UTF8.decoder)
-         .stream(r);
-       return ff;
-     })
+    var data = [],comp = new Completer(),ff;
+    ff = d is Uri ? new File.fromUri(d) : new File(d);
+    return ff.exists().then((c){
+     if(c){
+      return ff.openRead().transform(UTF8.decoder).listen((r){
+         data.add(r);
+       },onDone:(){
+          r.write(data.join(''));
+          r.close();
+       },onError:(e){
+          r.write(e.message);
+          r.close();
+       });
+     };
+
+    r.write('Not Found');
+    r.close();
+   });
   }
 }
 
@@ -27,11 +38,11 @@ class RioDefferedFile extends RioView{
   static create() => new RioDefferedFile();
   Future render(d,r,[m]){
      var data = [],f = new Completer() , ff = d is Uri ? new File.fromUri(d) : new File(d);
-     ff.exist().then((c){
+     ff.exists().then((c){
         ff.openRead()
          .transform(UTF8.decoder)
          .listen((r){
-           data.push(r);
+           data.add(r);
          },onDone:(){
              f.complete(data.join(''));
          },onError:(e){
@@ -113,9 +124,9 @@ class Rio{
 
     this._readydist = Distributor.create('readylist');
     this._readydist.on((n){});
-    this._readydist.whenDone((n){
-        this.res.close();
-    });
+    /*this._readydist.whenDone((n){*/
+    /*    /*this.res.close();*/*/
+    /*});*/
 
     this._defaultHandle = (r) => r.end();
 
@@ -247,7 +258,7 @@ class Rio{
     var vals = {};
     this.build((n){
       vals.addAll(n);
-    })
+    });
     return vals;
   }
 
@@ -281,8 +292,8 @@ class Rio{
     n = Funcs.switchUnless(n,'text');
     var rv = this.views.has(n) ? this.views.get(n) : this.views.get('text');
     this._readydist.once((f){ 
-      rv.render(m,this.res,data).then((f) => comp.complete(f),onError:(e) => comp.completeError(e))
-      .catchError((e) => comp.completeError(e));
+      rv.render(m,this.res,data).then((f) => comp.complete(f),
+        onError:(e) => comp.completeError(e));
     });
     return comp.future;
   }

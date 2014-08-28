@@ -2,27 +2,21 @@
 # See http://pub.dartlang.org/doc/glossary.html#lockfile
 packages:
   bass:
-    description:
-      path: "../bass"
-      relative: true
-    source: path
+    description: bass
+    source: hosted
     version: "0.1.0"
   ds:
     description: ds
     source: hosted
     version: "0.4.3"
   guardedfs:
-    description:
-      path: "../guardedfs"
-      relative: true
-    source: path
-    version: "0.1.3"
+    description: guardedfs
+    source: hosted
+    version: "0.1.5"
   hub:
-    description:
-      path: "../hub"
-      relative: true
-    source: path
-    version: "0.9.3"
+    description: hub
+    source: hosted
+    version: "0.9.4"
   path:
     description: path
     source: hosted
